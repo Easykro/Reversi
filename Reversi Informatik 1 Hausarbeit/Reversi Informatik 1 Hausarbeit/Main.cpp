@@ -18,7 +18,8 @@ struct Spieler
 {
 	string name;
 	char symbol;
-	int anzahlZüge;
+	int anzahlZüge = -1; // -1 heißt unbekannt an durchführbaren Zügen
+	bool isHuman;
 };
 
 void main()
@@ -30,36 +31,59 @@ void main()
 	int currentPlayer; // Speichert den spieler mit aktuellem Legerecht.
 
 	// 2 Spieler werden erzeugt.
-	Spieler spieler1;
-	Spieler spieler2;
+	Spieler spieler[2];
 
-	// Eingabe der 2 Namen
-	cout << "Bitte geben sie den Namen von Spieler 1 ein:" << endl;
-	getline(cin, spieler1.name);
-	spieler1.symbol = 'O';
+	cout << "Wollen Sie gegen einen anderen Spieler oder gegen den Computer spielen?" << endl <<
+		"Bitte geben Sie c (klein) ein, um gegen den Computer zu spielen oder s (klein)," << endl << "um gegen einen anderen Spieler zu spielen: ";
+	char modusAuswahl;
+	while (true){
+		string input;
+		getline(cin, input);
+		modusAuswahl = input.at(0);
+		
+		if (modusAuswahl == 's') {
 
-	cout << "Bitte geben sie den Namen von Spieler 2 ein:" << endl;
-	getline(cin, spieler2.name);
-	spieler2.symbol = 'X';
+			spieler[0].isHuman = true;
+			spieler[1].isHuman = true;
+
+
+		} else if (modusAuswahl == 'c') {
+
+			spieler[0].isHuman = true;
+			spieler[1].isHuman = false;
+			
+		
+		} else {
+			cout << "Bitte geben Sie ein gueltiges Zeichen ein (c oder s)" << endl;
+			continue;
+		}
+
+		break;
+	} 
+
+	// Eingabe der 2 Namen (oder eines Namens, wenn man gegen den Computer spielt)
+	for (int i = 0; i < 2; i++) {
+		
+		if (spieler[i].isHuman) {
+			cout << "Spieler " << i + 1 << ", gib deinen Namen ein:" << endl;
+			getline(cin, spieler[i].name);
+		}
+		else {
+			spieler[i].name = "Fieser Computer";
+		}
+	}
+	
+	
+	spieler[0].symbol = 'O';
+	spieler[1].symbol = 'X';
 
 	// Der beginnende Spieler wird ausgelost.
-	int random;
-	random = rand() % 2;
+	currentPlayer = rand() % 2;
+	cout << endl << "Die Wuerfel sind gefallen! ";
 
-	cout << endl;
-
-	cout << "Die Wuerfel sind gefallen! ";
-
-	if (random == 0) {
-		currentPlayer = 0;
-		cout << spieler1.name << " beginnt mit dem ersten Zug!" << endl;
-		cout << "Du hast die Spielsteine 'O'" << endl;
-	}
-	if (random == 1) {
-		currentPlayer = 1;
-		cout << spieler2.name << " beginnt mit dem ersten Zug!" << endl;
-		cout << "Du hast die Spielsteine 'X'" << endl;
-	}
+	cout << spieler[currentPlayer].name << " beginnt mit dem ersten Zug!" << endl
+		 << "Du hast die Spielsteine '" << spieler[currentPlayer].symbol <<"'." << endl;
+	
 
 	// Das Spielbrett wird auf "blank" gesetzt.
 	for (int row = 0; row < 8; row++) {
@@ -78,40 +102,29 @@ void main()
 
 	// Gameloop
 	// Wird solange ausgeführt, bis keiner der beiden Spieler mehr einen legalen Zug hat.
-	while ((spieler1.anzahlZüge != 0) || (spieler2.anzahlZüge != 0)) {
-		if (currentPlayer == 0) {
-			spieler1.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler2.symbol);
-			if (spieler1.anzahlZüge != 0) {
-				cout << spieler1.name << " (O) ist am Zug." << endl;
+	while ((spieler[0].anzahlZüge != 0) || (spieler[1].anzahlZüge != 0)) {
+		
+		spieler[currentPlayer].anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler[1 - currentPlayer].symbol);
+		if (spieler[currentPlayer].anzahlZüge != 0) {
+			cout << spieler[currentPlayer].name << " (" << spieler[currentPlayer].symbol <<  ") ist am Zug." << endl;
+			if (spieler[currentPlayer].isHuman) {
 				zugEingabe(legaleZüge);
-				zugAusfuehren(spielbrett, gLegalX, gLegalY, spieler1.symbol, spieler2.symbol);
-				system("cls");
-				anzeigen(spielbrett);
-				currentPlayer = 1;
 			}
 			else {
-				cout << "Ich kann keinen Zug machen :(, du bist dran." << endl;
-				currentPlayer = 1;
+				zugEingabeAutomatik(spielbrett, legaleZüge, spieler[currentPlayer].symbol, spieler[1 - currentPlayer].symbol);
 			}
+			zugAusfuehren(spielbrett, gLegalX, gLegalY, spieler[currentPlayer].symbol, spieler[1 - currentPlayer].symbol);
+			system("cls");
+			anzeigen(spielbrett);
 		}
 		else {
-			spieler2.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler1.symbol);
-			if (spieler2.anzahlZüge != 0) {
-				cout << spieler2.name << " (X) ist am Zug." << endl;
-				//zugEingabe(legaleZüge);
-				zugEingabeAutomatik(spielbrett, legaleZüge, spieler2.symbol, spieler1.symbol);
-				zugAusfuehren(spielbrett, gLegalX, gLegalY, spieler2.symbol, spieler1.symbol);
-				system("cls");
-				anzeigen(spielbrett);
-				currentPlayer = 0;
-			}
-			else {
-				cout << "Ich kann keinen Zug machen :(, du bist dran." << endl;
-				currentPlayer = 0;
-			}
+			cout << "Ich kann keinen Zug machen :(, du bist dran." << endl;
 		}
-		spieler1.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler2.symbol);
-		spieler2.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler1.symbol);
+		currentPlayer = 1 - currentPlayer;
+		
+		
+		spieler[0].anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler[0].symbol);
+		spieler[1].anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler[1].symbol);
 	}
 
 	cout << endl;
@@ -120,23 +133,22 @@ void main()
 
 
 	// Steine werden gezählt und das Ergebnis verkündet.
-
-	int ergebnisS1 = ergebnis(spielbrett, spieler1.symbol);
-	int ergebnisS2 = ergebnis(spielbrett, spieler2.symbol);
-
-
-	cout << spieler1.name << " hat insgesamt " << ergebnisS1 << " Steine auf dem Spielbrett." << endl;
-	cout << spieler2.name << " hat insgesamt " << ergebnisS2 << " Steine auf dem Spielbrett." << endl;
+	int ergebnisVon[2];
+	for (int i = 0; i < 2; i++) {
+		ergebnisVon[i] = ergebnis(spielbrett, spieler[i].symbol);
+		cout << spieler[i].name << " hat insgesamt " << ergebnisVon[i] << " Steine auf dem Spielbrett." << endl;
+	}	
 	cout << endl;
 
-	if (ergebnisS1 > ergebnisS2) {
-		cout << spieler1.name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
+
+	if (ergebnisVon[0] > ergebnisVon[1]) {
+		cout << spieler[0].name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
 	}
-	else if (ergebnisS1 == ergebnisS2) {
+	else if (ergebnisVon[0] == ergebnisVon[1]) {
 		cout << "Das Spiel ging unentschieden aus!" << endl;
 	}
 	else {
-		cout << spieler2.name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
+		cout << spieler[1].name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
 	}
 	cout << endl;
 
