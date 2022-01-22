@@ -98,7 +98,8 @@ void main()
 			spieler2.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler1.symbol);
 			if (spieler2.anzahlZüge != 0) {
 				cout << spieler2.name << " (X) ist am Zug." << endl;
-				zugEingabe(legaleZüge);
+				//zugEingabe(legaleZüge);
+				zugEingabeAutomatik(spielbrett, legaleZüge, spieler2.symbol, spieler1.symbol);
 				zugAusfuehren(spielbrett, gLegalX, gLegalY, spieler2.symbol, spieler1.symbol);
 				system("cls");
 				anzeigen(spielbrett);
@@ -112,21 +113,26 @@ void main()
 		spieler1.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler2.symbol);
 		spieler2.anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler1.symbol);
 	}
-	
+
 	cout << endl;
 	cout << "Das Spiel ist vorbei!" << endl;
 	cout << endl;
-	
+
+
 	// Steine werden gezählt und das Ergebnis verkündet.
-	ergebnis(spielbrett);
-	cout << spieler1.name << " hat insgesamt " << gErgebnisS1 << " Steine auf dem Spielbrett." << endl;
-	cout << spieler2.name << " hat insgesamt " << gErgebnisS2 << " Steine auf dem Spielbrett." << endl;
+
+	int ergebnisS1 = ergebnis(spielbrett, spieler1.symbol);
+	int ergebnisS2 = ergebnis(spielbrett, spieler2.symbol);
+
+
+	cout << spieler1.name << " hat insgesamt " << ergebnisS1 << " Steine auf dem Spielbrett." << endl;
+	cout << spieler2.name << " hat insgesamt " << ergebnisS2 << " Steine auf dem Spielbrett." << endl;
 	cout << endl;
 
-	if (gErgebnisS1 > gErgebnisS2) {
+	if (ergebnisS1 > ergebnisS2) {
 		cout << spieler1.name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
 	}
-	else if (gErgebnisS1 == gErgebnisS2) {
+	else if (ergebnisS1 == ergebnisS2) {
 		cout << "Das Spiel ging unentschieden aus!" << endl;
 	}
 	else {

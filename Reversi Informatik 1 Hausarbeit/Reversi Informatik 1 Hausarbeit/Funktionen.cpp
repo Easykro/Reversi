@@ -6,20 +6,19 @@ using namespace std;
 int gLegalX = 0;
 int gLegalY = 0;
 
-int gErgebnisS1 = 0;
-int gErgebnisS2 = 0;
+
 
 /*
-   Die Funktion zugEingabe lässt den Spieler seinen nächsten Spielzug 
-   eingeben. Nicht legale Spielzüge werden abgefangen und es muss ein 
-   neuer legaler Zug eingegeben werden. Sie bekommt als argument den  
-   Array mit den legalen Zügen.                                       
+   Die Funktion zugEingabe lässt den Spieler seinen nächsten Spielzug
+   eingeben. Nicht legale Spielzüge werden abgefangen und es muss ein
+   neuer legaler Zug eingegeben werden. Sie bekommt als argument den
+   Array mit den legalen Zügen.
 */
 
 void zugEingabe(int legalMove[8][8])
 {
 	int reihe, spalte;
-    int counter = 0;
+	int counter = 0;
 	bool eingabe = true;
 
 	cout << "Bitte geben Sie ihren Zug ein:" << endl;
@@ -33,15 +32,7 @@ void zugEingabe(int legalMove[8][8])
 		cin >> reihe;
 		cin >> spalte;
 
-		for (int z = 0; z < 8; z++) {
-			for (int s = 0; s < 8; s++) {
-				if (legalMove[reihe][spalte] == 1) {
-					counter++;
-				}
-			}
-		}
-
-		if (counter > 0) {
+		if (legalMove[reihe][spalte] == 1) {
 			eingabe = false;
 			gLegalY = reihe;
 			gLegalX = spalte;
@@ -54,12 +45,12 @@ void zugEingabe(int legalMove[8][8])
 }
 
 /*
-   Die Funktion anzeige() zeigt das Spielfeld in seinem Status quo an. 
-   Die Funktion wird mit dem 2D-Array "spielbrett" mit den aktuellen   
-   Spielsteinpositionen aufgerufen.									   
+   Die Funktion anzeige() zeigt das Spielfeld in seinem Status quo an.
+   Die Funktion wird mit dem 2D-Array "spielbrett" mit den aktuellen
+   Spielsteinpositionen aufgerufen.
 */
 
-void anzeigen(char brett[8][8]) 
+void anzeigen(char brett[8][8])
 {
 	const int SIZE = 8;
 	int reihe = 0;
@@ -115,8 +106,8 @@ void anzeigen(char brett[8][8])
 }
 
 /*
-   Diese Funktion speichert am Ende jeden aktuellen legalen Spielzug eines Spielers, 
-   in abhängigkeit des aktuellen Spielbrettzustandes.								  
+   Diese Funktion speichert am Ende jeden aktuellen legalen Spielzug eines Spielers,
+   in abhängigkeit des aktuellen Spielbrettzustandes.
 */
 
 int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
@@ -127,11 +118,12 @@ int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
 	int colSearch = 0;
 	int legalMoveCounter = 0;
 
+
 	// Array mit den bisherigen legalen Spielzügen wird auf seinen
 	// Default-Zustand zurückgesetzt, also jedes Feld auf 0.
 	for (reihe = 0; reihe < 8; reihe++) {
 		for (spalte = 0; spalte < 8; spalte++) {
-			legalMoveArray[reihe][spalte] = { 0 };
+			legalMoveArray[reihe][spalte] = 0;
 		}
 	}
 
@@ -151,7 +143,7 @@ int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
 					// Wenn wir außerhalb des Spielfeldes sind, dann
 					// gehen wir weiter.
 					if (reihe + rowSearch < 0 || reihe + rowSearch > 7 ||
-						spalte + colSearch < 0 || spalte + colSearch > 7 || (colSearch == 0 && rowSearch == 0)) {
+						spalte + colSearch < 0 || spalte + colSearch > 7) {
 						continue;
 					}
 
@@ -166,9 +158,9 @@ int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
 						continue;
 					}
 					else {
-     					legalMoveArray[reihe + rowSearch][spalte + colSearch] = 1;
-	     				legalMoveCounter++;
-				    }
+						legalMoveArray[reihe + rowSearch][spalte + colSearch] = 1;
+						legalMoveCounter++;
+					}
 				}
 			}
 		}
@@ -177,7 +169,7 @@ int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
 }
 
 /*
-   Diese Funktion ist führ die Ausführung des Spielzuges zuständig. Hier wird also
+   Diese Funktion ist für die Ausführung des Spielzuges zuständig. Hier wird also
    der Stein gesetzt und die gegnerischen Steine wenn notwendig umgedreht.
 */
 
@@ -239,16 +231,54 @@ void zugAusfuehren(char spielbrett[8][8], int legalCol, int legalRow, char playe
 	}
 }
 
-void ergebnis(char spielbrett[8][8])
+int ergebnis(char spielbrett[8][8], char player)
 {
+	int eigeneSteine = 0;
+
 	for (int i = 0; i < 8; i++) {
 		for (int j = 0; j < 8; j++) {
-			if (spielbrett[i][j] == 'O') {
-				gErgebnisS1++;
+			if (spielbrett[i][j] == player) {
+				eigeneSteine++;
 			}
-			if (spielbrett[i][j] == 'X') {
-				gErgebnisS2++;
+
+		}
+	}
+	return eigeneSteine;
+}
+
+void spielbrettKopieren(char spielbrett[8][8], char spielbrettKopie[8][8]) {
+	for (int reihe = 0; reihe < 8; reihe++) {
+		for (int spalte = 0; spalte < 8; spalte++) {
+			spielbrettKopie[reihe][spalte] = spielbrett[reihe][spalte];
+		}
+	}
+}
+
+
+void zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy) {
+	char spielbrettKopie[8][8];
+	int bestesErgebnis = 0; //ist null, damit es schlechter ist als jedes mögliche echte Ergebnis (das wäre min. 1)
+	int besterZugSpalte;
+	int besterZugReihe;
+
+	// probiert aus, welche Punktzahlen alle erlaubte Züge erzielen würden. Wenn es mehrere beste Züge (= Züge, die die höchste Punktzahl erzielen) gibt,
+	// wird der erste (=linkest obere) dieser Züge als bester Zug abgespeichert
+	for (int reihe = 0; reihe < 8; reihe++) {
+		for (int spalte = 0; spalte < 8; spalte++) {
+			if (legalMove[reihe][spalte] == 1) {
+				spielbrettKopieren(spielbrett, spielbrettKopie);
+				zugAusfuehren(spielbrettKopie, spalte, reihe, player, enemy);
+				int hypothetischesErgebnis = ergebnis(spielbrettKopie, player);
+				if (hypothetischesErgebnis > bestesErgebnis) {
+					bestesErgebnis = hypothetischesErgebnis;
+					besterZugSpalte = spalte;
+					besterZugReihe = reihe;
+				}
+
 			}
 		}
 	}
+
+	gLegalX = besterZugSpalte;
+	gLegalY = besterZugReihe;
 }
