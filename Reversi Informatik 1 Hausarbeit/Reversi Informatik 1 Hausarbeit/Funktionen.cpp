@@ -2,9 +2,6 @@
 #include "Funktionen.h"
 using namespace std;
 
-// Globale Variablen.
-int gLegalX = 0;
-int gLegalY = 0;
 
 
 
@@ -15,11 +12,10 @@ int gLegalY = 0;
    Array mit den legalen Zügen.
 */
 
-void zugEingabe(int legalMove[8][8])
+Move zugEingabe(int legalMove[8][8])
 {
 	int reihe, spalte;
 	int counter = 0;
-	bool eingabe = true;
 
 	cout << "Bitte geben Sie ihren Zug ein:" << endl;
 	cout << "(1. Y - Koordinate (enter), 2. X - Koordinate (enter))" << endl;
@@ -28,14 +24,16 @@ void zugEingabe(int legalMove[8][8])
 
 	// Die while-Schleife wird so lange ausgeführt, bis ein legaler
 	// Zug eingegeben wurde.
-	while (eingabe) {
+	while (true) {
 		cin >> reihe;
 		cin >> spalte;
 
 		if (legalMove[reihe][spalte] == 1) {
-			eingabe = false;
-			gLegalY = reihe;
-			gLegalX = spalte;
+			Move move;
+			move.legalY = reihe;
+			move.legalX = spalte;
+
+			return move;
 		}
 		else {
 			cout << "Sie haben einen nicht legalen Zug eingegeben!" << endl;
@@ -255,7 +253,7 @@ void spielbrettKopieren(char spielbrett[8][8], char spielbrettKopie[8][8]) {
 }
 
 
-void zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy) {
+Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy) {
 	char spielbrettKopie[8][8];
 	int bestesErgebnis = 0; //ist null, damit es schlechter ist als jedes mögliche echte Ergebnis (das wäre min. 1)
 	int besterZugSpalte;
@@ -279,6 +277,9 @@ void zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 		}
 	}
 
-	gLegalX = besterZugSpalte;
-	gLegalY = besterZugReihe;
+	Move move;
+	move.legalX = besterZugSpalte;
+	move.legalY = besterZugReihe;
+
+	return move;
 }

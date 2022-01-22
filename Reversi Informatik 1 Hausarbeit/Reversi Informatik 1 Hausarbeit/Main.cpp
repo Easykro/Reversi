@@ -107,13 +107,14 @@ void main()
 		spieler[currentPlayer].anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler[1 - currentPlayer].symbol);
 		if (spieler[currentPlayer].anzahlZüge != 0) {
 			cout << spieler[currentPlayer].name << " (" << spieler[currentPlayer].symbol <<  ") ist am Zug." << endl;
+			Move move;
 			if (spieler[currentPlayer].isHuman) {
-				zugEingabe(legaleZüge);
+				move = zugEingabe(legaleZüge);
 			}
 			else {
-				zugEingabeAutomatik(spielbrett, legaleZüge, spieler[currentPlayer].symbol, spieler[1 - currentPlayer].symbol);
+				move = zugEingabeAutomatik(spielbrett, legaleZüge, spieler[currentPlayer].symbol, spieler[1 - currentPlayer].symbol);
 			}
-			zugAusfuehren(spielbrett, gLegalX, gLegalY, spieler[currentPlayer].symbol, spieler[1 - currentPlayer].symbol);
+			zugAusfuehren(spielbrett, move.legalX, move.legalY, spieler[currentPlayer].symbol, spieler[1 - currentPlayer].symbol);
 			system("cls");
 			anzeigen(spielbrett);
 		}
