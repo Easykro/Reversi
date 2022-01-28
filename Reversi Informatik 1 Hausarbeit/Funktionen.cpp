@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "Funktionen.h"
 using namespace std;
 
@@ -282,9 +283,29 @@ Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 	return move;
 }
 
+bool logDatei(int moveHistory[124], string fileName)
+{
+	ofstream fileOut;
+	fileOut.open(fileName);
+
+	if (!fileOut) {
+		cout << "Fehler beim Oeffnen der Ausgabedatei" << endl;
+		return false;
+	}
+
+	fileOut << "LogDatei des Spiels:" << endl << endl;
+
+	for (int i = 0; i < 124; i++) {
+		fileOut << "(" << moveHistory[i] << "|" << moveHistory[i + 1] << ")" << endl;
+	}
+
+	fileOut.close();
+
+	return true;
+}
+
 void spielregeln(char brett[8][8])
 {
-	cout << "Herlich Willkommen bei Reversi!" << endl << endl;
 	cout << "Spielregeln von Reversi:" << endl;
 	cout << "Zu Beginn des Spiels befinden sich vier Steine in der Mitte des Bretts, " << endl;
 	cout << "zwei Steine mit dem Symbol 'X' und zwei Steine mit dem Symbol 'O'." << endl;
@@ -326,4 +347,6 @@ void spielregeln(char brett[8][8])
 	cout << endl << endl;
 
 	system("pause");
+	system("cls");
 }
+
