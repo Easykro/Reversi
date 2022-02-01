@@ -5,7 +5,7 @@ struct Move {
 	int legalY;
 };
 
-bool logDatei(int moveHistory[124], std::string fileName);
+bool logDateiEingabe(int moveHistory[124], std::string fileName);
 void spielregeln(char brett[8][8]);
 void anzeigen(char board[8][8]);
 void zugAusfuehren(char spielbrett[8][8], int legalCol, int legalRow, char player, char gegner);

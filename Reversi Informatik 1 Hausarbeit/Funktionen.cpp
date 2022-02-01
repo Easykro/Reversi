@@ -169,8 +169,6 @@ int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
    der Stein gesetzt und die gegnerischen Steine wenn notwendig umgedreht.
 */
 
-// Array hinzufügen (speichert ausgeführte Züge). Counter hinzufügen, der Anzahl ausgeführter Züge zählt.
-
 void zugAusfuehren(char spielbrett[8][8], int legalCol, int legalRow, char player, char gegner)
 {
 	int rowSearch = 0;
@@ -283,7 +281,7 @@ Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 	return move;
 }
 
-bool logDatei(int moveHistory[124], string fileName)
+bool logDateiEingabe(int moveHistory[124], string fileName)
 {
 	ofstream fileOut;
 	fileOut.open(fileName);
@@ -323,18 +321,43 @@ void spielregeln(char brett[8][8])
 
 	brett[3][3] = { 'X' };
 	brett[3][4] = { 'O' };
+	brett[4][4] = { 'X' };
+	brett[4][3] = { 'O' };
+
+	brett[2][2] = { '!' };
+	brett[2][3] = { '!' };
+	brett[2][4] = { '!' };
+	brett[3][2] = { '!' };
+	brett[3][5] = { '!' };
+	brett[5][5] = { '!' };
+	brett[5][3] = { '!' };
+	brett[5][4] = { '!' };
+	brett[4][2] = { '!' };
+	brett[4][5] = { '!' };
 
 	anzeigen(brett);
 	
 	cout << endl;
-	cout << "In diesem Fall kann der Spieler 'O' seinen naechsten Stein ueberall um das 'X' legen," << endl;
-	cout << "ausser natuerlich auf seinen eigenen Stein." << endl;
+	cout << "In diesem Fall kann der Spieler 'O' seinen naechsten Stein auf alle Felder legen, die mit einem ! markiert sind." << endl << endl;
 	cout << "Gegnerische Steine kann man zu seinen eigenen Steinen umdrehen, indem man gegnerische Steine" << endl;
 	cout << "mit seinem neu gesetzten Stein und einem anderen eigenen bereits liegenden Stein 'einschliesst'." << endl;
 	cout << "Beispiel:" << endl << endl;
 
+	brett[2][2] = { ' ' };
+	brett[2][3] = { ' ' };
+	brett[2][4] = { ' ' };
+	brett[3][2] = { ' ' };
+	brett[3][5] = { ' ' };
+	brett[5][5] = { ' ' };
+	brett[5][3] = { ' ' };
+	brett[5][4] = { ' ' };
+	brett[4][2] = { ' ' };
+	brett[4][5] = { ' ' };
+
 	brett[3][5] = { 'O' };
 	brett[3][6] = { 'X' };
+	brett[4][4] = { ' ' };
+	brett[4][3] = { ' ' };
 
 	anzeigen(brett);
 
@@ -349,4 +372,3 @@ void spielregeln(char brett[8][8])
 	system("pause");
 	system("cls");
 }
-

@@ -5,8 +5,6 @@
 
 // Niklas:
 // -Log-Datei einbauen.
-// -Buchstaben bei Anzeigefunktion X-Achse.
-
 
 // Helen:
 // -Test Modus.
@@ -23,7 +21,7 @@
 using namespace std;
 
 // Durch den Struct kann man jedem Spieler seinen Namen,
-// sein Symbol und seine aktuelle Anzahl an legalen Zügen
+// sein Symbol, seine aktuelle Anzahl an legalen Zügen
 // und seine Menschlichkeit zuweisen.
 struct Spieler
 {
@@ -43,11 +41,10 @@ void main()
 		char spielbrett[8][8]; // Array mit Spielbrett.
 		int legaleZüge[8][8]; // Array mit den aktuellen legalen Zügen.
 		int currentPlayer; // Speichert den spieler mit aktuellem Legerecht.
-		int gesetzteSteine = 0;
-		int *moveHistory = new int[124];
+		int gesetzteSteine = 0; // Speichert die Anzahl bereits gesetzter Steine.
+		int *moveHistory = new int[124]; // Speichert die gespielten Moves.
 		bool spielen = true;
 
-		// 2 Spieler werden erzeugt.
 		Spieler spieler[2];
 
 		cout << "Herzlich Willkommen bei Reversi!" << endl << endl;
@@ -55,15 +52,14 @@ void main()
 		cout << "Bitte gib p fuer Profi und a fuer Anfaenger ein." << endl;
 
 		while (true) {
-			char Auswahl;
-			string input;
-			getline(cin, input);
-			Auswahl = input.at(0);
+			char auswahl;
+			cin >> auswahl;
 
-			if (Auswahl == 'p') {
+			if (auswahl == 'p') {
 				system("cls");
 			}
-			else if (Auswahl == 'a') {
+			else if (auswahl == 'a') {
+				system("cls");
 				spielregeln(spielbrett);
 			}
 			else {
@@ -73,38 +69,31 @@ void main()
 			break;
 		}
 
-		cout << "Wollen Sie gegen einen anderen Spieler oder gegen den Computer spielen?" << endl << endl
-		   	 << "Bitte geben Sie c (klein) ein, um gegen den Computer zu spielen oder s (klein)," << endl << "um gegen einen anderen Spieler zu spielen: ";
+		cout << "Willst du gegen einen anderen Spieler oder gegen den Computer spielen?" << endl << endl;
+		cout << "Bitte geben Sie c (klein) ein, um gegen den Computer zu spielen oder s (klein)," << endl << "um gegen einen anderen Spieler zu spielen: ";
 
-		char modusAuswahl;
 		while (true) {
-			string input;
-			getline(cin, input);
-			modusAuswahl = input.at(0);
+			char auswahl;
+			cin >> auswahl;
 
-			if (modusAuswahl == 's') {
-
+			if (auswahl == 's') {
 				spieler[0].isHuman = true;
 				spieler[1].isHuman = true;
-
-
 			}
-			else if (modusAuswahl == 'c') {
-
+			else if (auswahl == 'c') {
 				spieler[0].isHuman = true;
 				spieler[1].isHuman = false;
-
-
 			}
 			else {
 				cout << "Bitte geben Sie ein gueltiges Zeichen ein (c oder s)" << endl;
 				continue;
 			}
-
 			break;
 		}
-
 		cout << endl;
+
+		string dummy;
+		getline(cin, dummy);
 
 		// Eingabe der 2 Namen (oder eines Namens, wenn man gegen den Computer spielt)
 		for (int i = 0; i < 2; i++) {
@@ -117,8 +106,6 @@ void main()
 				spieler[i].name = "Fieser Computer";
 			}
 		}
-
-
 		spieler[0].symbol = 'O';
 		spieler[1].symbol = 'X';
 
@@ -128,7 +115,6 @@ void main()
 
 		cout << spieler[currentPlayer].name << " beginnt mit dem ersten Zug!" << endl
 			<< "Du hast die Spielsteine '" << spieler[currentPlayer].symbol << "'." << endl;
-
 
 		// Das Spielbrett wird auf "blank" gesetzt.
 		for (int row = 0; row < 8; row++) {
@@ -144,7 +130,9 @@ void main()
 		spielbrett[4][3] = { 'O' };
 		anzeigen(spielbrett);
 
-		// Gameloop
+
+
+		// Gameloop *ANFANG*
 		// Wird solange ausgeführt, bis keiner der beiden Spieler mehr einen legalen Zug hat.
 		while ((spieler[0].anzahlZüge != 0) || (spieler[1].anzahlZüge != 0)) {
 
@@ -177,13 +165,14 @@ void main()
 			spieler[0].anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler[0].symbol);
 			spieler[1].anzahlZüge = legalMoves(spielbrett, legaleZüge, spieler[1].symbol);
 		}
-
 		cout << endl;
-		cout << "Das Spiel ist vorbei!" << endl;
-		cout << endl;
+		// Gameloop *ENDE*
 
 
-		// Steine werden gezählt und das Ergebnis verkündet.
+
+		cout << "Das Spiel ist vorbei!" << endl << endl;;
+
+		// Steine werden gezählt.
 		int ergebnisVon[2];
 		for (int i = 0; i < 2; i++) {
 			ergebnisVon[i] = ergebnis(spielbrett, spieler[i].symbol);
@@ -191,7 +180,7 @@ void main()
 		}
 		cout << endl;
 
-
+		// Ergebnis wird verkündet.
 		if (ergebnisVon[0] > ergebnisVon[1]) {
 			cout << spieler[0].name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
 		}
@@ -202,23 +191,21 @@ void main()
 			cout << spieler[1].name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
 		}
 		cout << endl;
-
+		
+		// Auswahl zur Anzeige der Log-Datei.
 		cout << "Moechtest du die Log-Datei angezeigt bekommen?" << endl;
 		cout << "j = JA und n = NEIN" << endl;
-		cout << endl;
+		getline(cin, dummy);
 
-		// Auswahl zur Anzeige der Log-Datei.
 		while (true) {
-			char Auswahl;
-			string input;
-			getline(cin, input);
-			Auswahl = input.at(0);
+			char auswahl;
+			cin >> auswahl;
 
-			if (Auswahl == 'j') {
-				logDatei(moveHistory, "LogDatei");
+			if (auswahl == 'j') {
+				logDateiEingabe(moveHistory, "LogDatei");
+
 			}
-			else if (Auswahl == 'n') {
-				cout << "Alles klar!" << endl;
+			else if (auswahl == 'n') {
 			}
 			else {
 				cout << "Bitte geben Sie ein gueltiges Zeichen ein (j oder n)" << endl;
@@ -226,23 +213,23 @@ void main()
 			}
 			break;
 		}
+		cout << endl;
 
+		// Abfrage ob nochmal gespielt werden möchte.
 		cout << "Wollt ihr nochmal eine Runde spielen :)?" << endl;
 		cout << "j = JA und n = NEIN" << endl;
-		cout << endl;
 
 		while (true) {
-			char Auswahl;
-			string input;
-			getline(cin, input);
-			Auswahl = input.at(0);
+			char auswahl;
+			cin >> auswahl;
 
-			if (Auswahl == 'j') {
+			if (auswahl == 'j') {
 				spielen = true;
 			}
-			else if (Auswahl == 'n') {
+			else if (auswahl == 'n') {
 				cout << "Auf Wiedersehen :)!" << endl;
 				spielen = false;
+				return;
 			}
 			else {
 				cout << "Bitte geben Sie ein gueltiges Zeichen ein (j oder n)" << endl;
@@ -250,6 +237,7 @@ void main()
 			}
 			break;
 		}
+		cout << endl;
 
 		delete[] moveHistory;
 	}
