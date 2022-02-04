@@ -18,8 +18,6 @@ Move zugEingabe(int legalMove[8][8])
 	cout << "Bitte geben Sie ihren Zug ein:" << endl;
 	cout << "(1. Y - Koordinate (enter), 2. X - Koordinate (enter))" << endl;
 
-	// Funktion isalpha() für die Buchstaben
-
 	// Die while-Schleife wird so lange ausgeführt, bis ein legaler
 	// Zug eingegeben wurde.
 	while (true) {
@@ -320,7 +318,8 @@ Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 	return move;
 }
 
-Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy) {
+Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy)
+{
 	return zugEingabeAutomatik(spielbrett, legalMove, player, enemy, 4);
 }
 
@@ -330,19 +329,28 @@ bool logDateiEingabe(int moveHistory[124], string fileName)
 	fileOut.open(fileName);
 
 	if (!fileOut) {
-		cout << "Fehler beim Oeffnen der Ausgabedatei" << endl;
+		cout << "Fehler beim Oeffnen der LogDatei" << endl;
 		return false;
 	}
 
 	fileOut << "LogDatei des Spiels:" << endl << endl;
 
-	for (int i = 0; i < 124; i++) {
-		fileOut << "(" << moveHistory[i] << "|" << moveHistory[i + 1] << ")" << endl;
+	for (int i = 1; i < 61; i++) {
+		fileOut << "(" << moveHistory[i*2-1] << "|" << moveHistory[i*2] << ")" << endl;
 	}
 
 	fileOut.close();
 
 	return true;
+}
+
+void ausgabeMoveHistory(int moveHistory[120])
+{
+	cout << "LogDatei des Spiels:" << endl << endl;
+	for (int i = 1; i < 61; i++) {
+		cout << "(" << moveHistory[i * 2 - 1] << "|" << moveHistory[i * 2] << ")" << endl;
+	}
+	cout << endl;
 }
 
 void spielregeln(char brett[8][8])
@@ -405,7 +413,7 @@ void spielregeln(char brett[8][8])
 	anzeigen(brett);
 
 	cout << endl;
-	cout << "Da Spieler 'X' mit seinem neu gesetzten Stein auf (6|3) die zwei gegnerischen Steine eingeschlossen hat," << endl;
+	cout << "Da Spieler 'X' mit seinem neu gesetzten Stein auf (3|3) die zwei gegnerischen Steine eingeschlossen hat," << endl;
 	cout << "werden diese nun zu 'X'en umgedreht. Hat ein Spieler keinen legalen Zug zur Verfuegung, so ist der gegnerische Spieler wieder am Zug." << endl;
 	cout << "Ziel des Spiels ist es, am Ende am meisten eigene Steine auf dem Spielbrett zu haben." << endl;
 	cout << endl;
