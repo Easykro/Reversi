@@ -26,7 +26,7 @@ Move zugEingabe(int legalMove[8][8])
 		cin >> reihe;
 		cin >> spalte;
 
-		if (legalMove[reihe][spalte] == 1) {
+		if (0 <= reihe && reihe <= 7 && 0 <= spalte && spalte <= 7 && legalMove[reihe][spalte] == 1) {
 			Move move;
 			move.legalY = reihe;
 			move.legalX = spalte;
@@ -36,6 +36,9 @@ Move zugEingabe(int legalMove[8][8])
 		else {
 			cout << "Sie haben einen nicht legalen Zug eingegeben!" << endl;
 			cout << "Bitte geben Sie neue Koordinaten ein:" << endl;
+			cin.clear();
+			cin.ignore(10000, '\n'); // siehe https://stackoverflow.com/questions/5131647/why-would-we-call-cin-clear-and-cin-ignore-after-reading-input
+			//das falsch eingegebene Zeichen, das nicht in die Variablen reihe und spalte abgespeichert werden kann, wird jetzt ignoriert		
 		}
 	}
 }
@@ -242,6 +245,21 @@ int ergebnis(char spielbrett[8][8], char player)
 	return eigeneSteine;
 }
 
+int bewertung(char spielbrett[8][8], char player)
+{
+	int punkte = ergebnis(spielbrett, player);
+	int ecken = 0;
+	const int eckenKoordinaten[4][2] = { {0,0},{0,7},{7,0},{7,7} };
+	for (int i = 0; i < 4; i++) {
+		int x = eckenKoordinaten[i][0];
+		int y = eckenKoordinaten[i][1];
+		if (spielbrett[x][y] == player) {
+			ecken++;
+		}
+	}
+	return punkte + ecken * 10;
+}
+
 void spielbrettKopieren(char spielbrett[8][8], char spielbrettKopie[8][8]) {
 	for (int reihe = 0; reihe < 8; reihe++) {
 		for (int spalte = 0; spalte < 8; spalte++) {
@@ -250,9 +268,9 @@ void spielbrettKopieren(char spielbrett[8][8], char spielbrettKopie[8][8]) {
 	}
 }
 
-Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy) {
+Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy, int thinkAhead) {
 	char spielbrettKopie[8][8];
-	int bestesErgebnis = 0; //ist null, damit es schlechter ist als jedes mögliche echte Ergebnis (das wäre min. 1)
+	int bestesErgebnis = INT_MIN; // damit es schlechter ist als jedes mögliche echte Ergebnis
 	int besterZugSpalte;
 	int besterZugReihe;
 
@@ -263,13 +281,34 @@ Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 			if (legalMove[reihe][spalte] == 1) {
 				spielbrettKopieren(spielbrett, spielbrettKopie);
 				zugAusfuehren(spielbrettKopie, spalte, reihe, player, enemy);
-				int hypothetischesErgebnis = ergebnis(spielbrettKopie, player);
+				if (thinkAhead > 0) {
+					int legaleZuegeGegner[8][8];
+					int anzahlZuegeGegner = legalMoves(spielbrettKopie, legaleZuegeGegner, player);
+					if (anzahlZuegeGegner == 0) {
+						// Gegner wird übersprungen. Rechne nochmal für mich.
+						int legaleZuegeIch = legalMoves(spielbrettKopie, legaleZuegeGegner, enemy);
+						if (legaleZuegeIch > 0) {
+							Move meineReaktion = zugEingabeAutomatik(spielbrettKopie, legaleZuegeGegner, player, enemy, thinkAhead - 1);
+							zugAusfuehren(spielbrettKopie, meineReaktion.legalX, meineReaktion.legalY, player, enemy);
+						}
+						else {
+							// Spiel vorbei.
+						}
+						
+					}
+					else {
+						Move gegnerReaktion = zugEingabeAutomatik(spielbrettKopie, legaleZuegeGegner, enemy, player, thinkAhead - 1);
+						zugAusfuehren(spielbrettKopie, gegnerReaktion.legalX, gegnerReaktion.legalY, enemy, player);
+					}
+								
+				}
+				
+				int hypothetischesErgebnis = bewertung(spielbrettKopie, player) - bewertung(spielbrettKopie, enemy); // Punkte vom Gegner verhingern, auch wenn mein Punktestand gleich bleibt
 				if (hypothetischesErgebnis > bestesErgebnis) {
 					bestesErgebnis = hypothetischesErgebnis;
 					besterZugSpalte = spalte;
 					besterZugReihe = reihe;
 				}
-
 			}
 		}
 	}
@@ -279,6 +318,10 @@ Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 	move.legalY = besterZugReihe;
 
 	return move;
+}
+
+Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy) {
+	return zugEingabeAutomatik(spielbrett, legalMove, player, enemy, 4);
 }
 
 bool logDateiEingabe(int moveHistory[124], string fileName)
