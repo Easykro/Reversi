@@ -18,6 +18,8 @@
 #include <ctime>
 #include "Funktionen.h"
 
+
+
 using namespace std;
 
 // Durch den Struct kann man jedem Spieler seinen Namen,
@@ -37,7 +39,7 @@ void main()
 
 	while (true) {
 
-		char spielbrett[8][8]; // Array mit Spielbrett.
+		Board spielbrett; // Array mit Spielbrett.
 		int legaleZüge[8][8]; // Array mit den aktuellen legalen Zügen.
 		int currentPlayer; // Speichert den Spieler mit aktuellem Legerecht.
 		int gesetzteSteine = 0; // Speichert die Anzahl bereits gesetzter Steine.
@@ -62,7 +64,7 @@ void main()
 				spielregeln(spielbrett);
 			}
 			else {
-				cout << "Bitte geben Sie ein gueltiges Zeichen ein (p oder a)" << endl;
+				cout << "Bitte gib ein gueltiges Zeichen ein (p oder a)" << endl;
 				continue;
 			}
 			break;
@@ -70,7 +72,7 @@ void main()
 
 		// Auswahl des Spielmodus.
 		cout << "Willst du gegen einen anderen Spieler oder gegen den Computer spielen?" << endl << endl;
-		cout << "Bitte geben Sie c (klein) ein, um gegen den Computer zu spielen oder s (klein)," << endl << "um gegen einen anderen Spieler zu spielen: ";
+		cout << "Bitte gib c ein, um gegen den Computer zu spielen oder s," << endl << " um gegen einen anderen Spieler zu spielen: ";
 
 		while (true) {
 			char auswahl;
@@ -87,16 +89,40 @@ void main()
 				spieler[1].isHuman = false;
 			}
 			else {
-				cout << "Bitte geben Sie ein gueltiges Zeichen ein (c oder s)" << endl;
+				cout << "Bitte gib ein gueltiges Zeichen ein (c oder s)" << endl;
 				continue;
 			}
 			break;
 		}
 		cout << endl;
 
+		
+
+		cout << endl << "Willst du die volle Version oder die Testversion (nur noch 10 Zuege bis Spielende) spielen?" << endl
+			<< "Gib v ein, um die Vollversion zu spielen oder t fuer die Testversion" << endl;
+		while (true) {
+			char auswahl;
+			cin >> auswahl;
+
+			if (auswahl == 'v') {
+				spielbrettBefuellen(spielbrett);
+
+			}
+			else if (auswahl == 't') {
+				spielbrettBefuellenTestversion(spielbrett);
+
+			}
+			else {
+				cout << "Bitte gib ein gueltiges Zeichen ein (v oder t)" << endl;
+				continue;
+			}
+			break;
+		}
+
 		// Schluckt ein "ENTER".
 		string dummy;
 		getline(cin, dummy);
+
 
 		// Eingabe der 2 Namen (oder eines Namens, wenn man gegen den Computer spielt)
 		for (int i = 0; i < 2; i++) {
@@ -119,21 +145,9 @@ void main()
 		cout << spieler[currentPlayer].name << " beginnt mit dem ersten Zug!" << endl
 			<< "Du hast die Spielsteine '" << spieler[currentPlayer].symbol << "'." << endl;
 
-		// Das Spielbrett wird auf "blank" gesetzt.
-		for (int row = 0; row < 8; row++) {
-			for (int col = 0; col < 8; col++) {
-				spielbrett[row][col] = ' ';
-			}
-		}
 
-		// Die 4 festen Steine werden gesetzt und das Spielfeld erstmals angezeigt.
-		spielbrett[3][3] = { 'X' };
-		spielbrett[4][4] = { 'X' };
-		spielbrett[3][4] = { 'O' };
-		spielbrett[4][3] = { 'O' };
 		anzeigen(spielbrett);
-
-
+		
 
 		// Gameloop *ANFANG*
 		// Wird solange ausgeführt, bis keiner der beiden Spieler mehr einen legalen Zug hat.
@@ -164,7 +178,7 @@ void main()
 				moveHistory[gesetzteSteine*2] = move.legalX;
 
 				system("cls");
-				cout << "Zuletzt ausgefuehrter Spielzug: (" << moveHistory[gesetzteSteine] << "|" << moveHistory[gesetzteSteine + 1] << ")" << endl;
+				cout << "Zuletzt ausgefuehrter Spielzug: (" << moveHistory[gesetzteSteine*2-1] << "|" << moveHistory[gesetzteSteine*2] << ")" << endl;
 				cout << "Aktueller Punktestand von " << spieler[0].name << ": " << ergebnis(spielbrett, spieler[0].symbol) << endl;
 				cout << "Aktueller Punktestand von " << spieler[1].name << ": " << ergebnis(spielbrett, spieler[1].symbol) << endl;
 				anzeigen(spielbrett);
@@ -224,7 +238,7 @@ void main()
 			else if (auswahl == 'n') {
 			}
 			else {
-				cout << "Bitte geben Sie ein gueltiges Zeichen ein (j oder n)" << endl;
+				cout << "Bitte gib ein gueltiges Zeichen ein (j oder n)" << endl;
 				continue;
 			}
 			break;
@@ -246,7 +260,7 @@ void main()
 				return;
 			}
 			else {
-				cout << "Bitte geben Sie ein gueltiges Zeichen ein (j oder n)" << endl;
+				cout << "Bitte gib ein gueltiges Zeichen ein (j oder n)" << endl;
 				continue;
 			}
 			break;

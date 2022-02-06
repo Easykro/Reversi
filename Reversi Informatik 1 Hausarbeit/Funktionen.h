@@ -5,12 +5,18 @@ struct Move {
 	int legalY;
 };
 
+//using Board = std::array < std::array<char, 8>, 8>;
+using Board = char[8][8];
+
 bool logDateiEingabe(int moveHistory[124], std::string fileName);
-void spielregeln(char brett[8][8]);
-void anzeigen(char board[8][8]);
-void zugAusfuehren(char spielbrett[8][8], int legalCol, int legalRow, char player, char gegner);
+void spielregeln(Board &brett);
+void anzeigen(Board &board);
+void zugAusfuehren(Board &spielbrett, int legalCol, int legalRow, char player, char gegner);
 void ausgabeMoveHistory(int moveHistory[120]);
-int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy);
-int ergebnis(char spielbrett[8][8], char player);
-Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy);
+int legalMoves(Board &brett, int legalMoveArray[8][8], char enemy);
+int ergebnis(Board &spielbrett, char player);
+Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, char enemy);
 Move zugEingabe(int legalMove[8][8]);
+void spielbrettBefuellen(Board &spielbrett);
+void spielbrettBefuellenTestversion(Board &spielbrett);
+

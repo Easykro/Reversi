@@ -1,6 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include "Funktionen.h"
+#include <algorithm> 
+#include <iterator> 
+#include <iomanip>
 using namespace std;
 
 /*
@@ -15,7 +18,7 @@ Move zugEingabe(int legalMove[8][8])
 	int reihe, spalte;
 	int counter = 0;
 
-	cout << "Bitte geben Sie ihren Zug ein:" << endl;
+	cout << "Bitte gib deinen Zug ein:" << endl;
 	cout << "(1. Y - Koordinate (enter), 2. X - Koordinate (enter))" << endl;
 
 	// Die while-Schleife wird so lange ausgeführt, bis ein legaler
@@ -32,8 +35,8 @@ Move zugEingabe(int legalMove[8][8])
 			return move;
 		}
 		else {
-			cout << "Sie haben einen nicht legalen Zug eingegeben!" << endl;
-			cout << "Bitte geben Sie neue Koordinaten ein:" << endl;
+			cout << "Du hast einen nicht legalen Zug eingegeben!" << endl;
+			cout << "Bitte gib neue Koordinaten ein:" << endl;
 			cin.clear();
 			cin.ignore(10000, '\n'); // siehe https://stackoverflow.com/questions/5131647/why-would-we-call-cin-clear-and-cin-ignore-after-reading-input
 			//das falsch eingegebene Zeichen, das nicht in die Variablen reihe und spalte abgespeichert werden kann, wird jetzt ignoriert		
@@ -47,7 +50,7 @@ Move zugEingabe(int legalMove[8][8])
    Spielsteinpositionen aufgerufen.
 */
 
-void anzeigen(char brett[8][8])
+void anzeigen(Board &brett)
 {
 	const int SIZE = 8;
 	int reihe = 0;
@@ -107,7 +110,7 @@ void anzeigen(char brett[8][8])
    in abhängigkeit des aktuellen Spielbrettzustandes.
 */
 
-int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
+int legalMoves(Board &brett, int legalMoveArray[8][8], char enemy)
 {
 	int spalte = 0;
 	int reihe = 0;
@@ -170,7 +173,7 @@ int legalMoves(char brett[8][8], int legalMoveArray[8][8], char enemy)
    der Stein gesetzt und die gegnerischen Steine wenn notwendig umgedreht.
 */
 
-void zugAusfuehren(char spielbrett[8][8], int legalCol, int legalRow, char player, char gegner)
+void zugAusfuehren(Board &spielbrett, int legalCol, int legalRow, char player, char gegner)
 {
 	int rowSearch = 0;
 	int colSearch = 0;
@@ -228,7 +231,7 @@ void zugAusfuehren(char spielbrett[8][8], int legalCol, int legalRow, char playe
 	}
 }
 
-int ergebnis(char spielbrett[8][8], char player)
+int ergebnis(Board &spielbrett, char player)
 {
 	int eigeneSteine = 0;
 
@@ -243,7 +246,7 @@ int ergebnis(char spielbrett[8][8], char player)
 	return eigeneSteine;
 }
 
-int bewertung(char spielbrett[8][8], char player)
+int bewertung(Board &spielbrett, char player)
 {
 	int punkte = ergebnis(spielbrett, player);
 	int ecken = 0;
@@ -258,7 +261,7 @@ int bewertung(char spielbrett[8][8], char player)
 	return punkte + ecken * 10;
 }
 
-void spielbrettKopieren(char spielbrett[8][8], char spielbrettKopie[8][8]) {
+void spielbrettKopieren(Board &spielbrett, Board &spielbrettKopie) {
 	for (int reihe = 0; reihe < 8; reihe++) {
 		for (int spalte = 0; spalte < 8; spalte++) {
 			spielbrettKopie[reihe][spalte] = spielbrett[reihe][spalte];
@@ -266,8 +269,8 @@ void spielbrettKopieren(char spielbrett[8][8], char spielbrettKopie[8][8]) {
 	}
 }
 
-Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy, int thinkAhead) {
-	char spielbrettKopie[8][8];
+Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, char enemy, int thinkAhead) {
+	Board spielbrettKopie;
 	int bestesErgebnis = INT_MIN; // damit es schlechter ist als jedes mögliche echte Ergebnis
 	int besterZugSpalte;
 	int besterZugReihe;
@@ -318,7 +321,7 @@ Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player
 	return move;
 }
 
-Move zugEingabeAutomatik(char spielbrett[8][8], int legalMove[8][8], char player, char enemy)
+Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, char enemy)
 {
 	return zugEingabeAutomatik(spielbrett, legalMove, player, enemy, 4);
 }
@@ -353,7 +356,7 @@ void ausgabeMoveHistory(int moveHistory[120])
 	cout << endl;
 }
 
-void spielregeln(char brett[8][8])
+void spielregeln(Board &brett)
 {
 	cout << "Spielregeln von Reversi:" << endl;
 	cout << "Zu Beginn des Spiels befinden sich vier Steine in der Mitte des Bretts, " << endl;
@@ -422,4 +425,41 @@ void spielregeln(char brett[8][8])
 
 	system("pause");
 	system("cls");
+}
+
+//Befüllt das Spielfeld vor Spielbeginn  mit den 4 Anfangssteinen
+void spielbrettBefuellen(Board &spielbrett) {
+// Das Spielbrett wird auf "blank" gesetzt.
+for (int row = 0; row < 8; row++) {
+	for (int col = 0; col < 8; col++) {
+		spielbrett[row][col] = ' ';
+	}
+}
+
+// Die 4 festen Steine werden gesetzt
+spielbrett[3][3] = { 'X' };
+spielbrett[4][4] = { 'X' };
+spielbrett[3][4] = { 'O' };
+spielbrett[4][3] = { 'O' };
+}
+
+//Befüllt das Spielfeld so, dass noch 10 Felder frei sind
+void spielbrettBefuellenTestversion(Board &spielbrett) {
+	const char inhalt[] = "XXOXXOOXOOXXXXXXOOOOXOXXOOXOXXXXOOXOOOOOO XXXOOO   OXX O   OXX  ";
+	for (int i = 0; i < 64; i++) {
+		((char*) spielbrett)[i] = inhalt[i];
+	}
+	//Der String stellt das hier unten abgebildete Spielfeld dar
+	/*std::array < std::array<char, 8>, 8> test = array{
+		array{'X','X','O','X','X','O','O','X'},
+		array{'O','O','X','X','X','X','X','X'},
+		array{'O','O','O','O','X','O','X','X'},
+		array{'O','O','X','O','X','X','X','X'},
+		array{'O','O','X','O','O','O','O','O'},
+		array{'O',' ','X','X','X','O','O','O'},
+		array{' ',' ',' ','O','X','X',' ','O'},
+		array{' ',' ',' ','O','X','X',' ',' '},
+	};
+	*/
+
 }
