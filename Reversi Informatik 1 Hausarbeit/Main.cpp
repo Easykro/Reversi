@@ -3,23 +3,11 @@
 // Helen Reichhard und Niklas Fürst
 // 13.01.2022
 
-// Niklas:
-// -Log-Datei einbauen.
-
-// Helen:
-// -Test Modus.
-// -Sie zu Du.
-// -Computer verbessern.
-// -Referenzen.
-
 #include <iostream>
 #include <string>
 #include <cstdlib>
 #include <ctime>
 #include "Funktionen.h"
-
-
-
 using namespace std;
 
 // Durch den Struct kann man jedem Spieler seinen Namen,
@@ -39,11 +27,12 @@ void main()
 
 	while (true) {
 
+		History moveHistory;
 		Board spielbrett; // Array mit Spielbrett.
 		int legaleZüge[8][8]; // Array mit den aktuellen legalen Zügen.
 		int currentPlayer; // Speichert den Spieler mit aktuellem Legerecht.
 		int gesetzteSteine = 0; // Speichert die Anzahl bereits gesetzter Steine.
-		int *moveHistory = new int[120]; // Speichert die gespielten Moves im dynamischen Speicher.
+		bool spielModus;
 
 		Spieler spieler[2];
 
@@ -72,7 +61,7 @@ void main()
 
 		// Auswahl des Spielmodus.
 		cout << "Willst du gegen einen anderen Spieler oder gegen den Computer spielen?" << endl << endl;
-		cout << "Bitte gib c ein, um gegen den Computer zu spielen oder s," << endl << " um gegen einen anderen Spieler zu spielen: ";
+		cout << "Bitte gib c ein, um gegen den Computer zu spielen oder s," << endl << "um gegen einen anderen Spieler zu spielen: ";
 
 		while (true) {
 			char auswahl;
@@ -96,21 +85,20 @@ void main()
 		}
 		cout << endl;
 
-		
-
-		cout << endl << "Willst du die volle Version oder die Testversion (nur noch 10 Zuege bis Spielende) spielen?" << endl
-			<< "Gib v ein, um die Vollversion zu spielen oder t fuer die Testversion" << endl;
+		// Auswahl für Testversion oder ganzes Spiel
+		cout << "Willst du die volle Version oder die Testversion (nur noch 10 Zuege bis Spielende) spielen?" << endl
+			<< "Gib v ein, um die Vollversion zu spielen oder t fuer die Testversion: ";
 		while (true) {
 			char auswahl;
 			cin >> auswahl;
 
 			if (auswahl == 'v') {
 				spielbrettBefuellen(spielbrett);
-
+				spielModus = true;
 			}
 			else if (auswahl == 't') {
 				spielbrettBefuellenTestversion(spielbrett);
-
+				spielModus = false;
 			}
 			else {
 				cout << "Bitte gib ein gueltiges Zeichen ein (v oder t)" << endl;
@@ -118,6 +106,7 @@ void main()
 			}
 			break;
 		}
+		cout << endl;
 
 		// Schluckt ein "ENTER".
 		string dummy;
@@ -145,9 +134,8 @@ void main()
 		cout << spieler[currentPlayer].name << " beginnt mit dem ersten Zug!" << endl
 			<< "Du hast die Spielsteine '" << spieler[currentPlayer].symbol << "'." << endl;
 
-
 		anzeigen(spielbrett);
-		
+
 
 		// Gameloop *ANFANG*
 		// Wird solange ausgeführt, bis keiner der beiden Spieler mehr einen legalen Zug hat.
@@ -174,11 +162,22 @@ void main()
 
 				// Koordinaten des gesetzten Steins wird gespeichert.
 				gesetzteSteine++;
-				moveHistory[gesetzteSteine*2-1] = move.legalY;
-				moveHistory[gesetzteSteine*2] = move.legalX;
+				if (spielModus == true) {
+					moveHistory.volleHistory[gesetzteSteine * 2 - 1] = move.legalY;
+					moveHistory.volleHistory[gesetzteSteine * 2] = move.legalX;
+				}
+				else {
+					moveHistory.testHistory[gesetzteSteine * 2 - 1] = move.legalY;
+					moveHistory.testHistory[gesetzteSteine * 2] = move.legalX;
+				}
 
 				system("cls");
-				cout << "Zuletzt ausgefuehrter Spielzug: (" << moveHistory[gesetzteSteine*2-1] << "|" << moveHistory[gesetzteSteine*2] << ")" << endl;
+				if (spielModus == true) {
+					cout << "Zuletzt ausgefuehrter Spielzug: (" << moveHistory.volleHistory[gesetzteSteine * 2 - 1] << "|" << moveHistory.volleHistory[gesetzteSteine * 2] << ")" << endl;
+				}
+				else {
+					cout << "Zuletzt ausgefuehrter Spielzug: (" << moveHistory.testHistory[gesetzteSteine * 2 - 1] << "|" << moveHistory.testHistory[gesetzteSteine * 2] << ")" << endl;
+				}
 				cout << "Aktueller Punktestand von " << spieler[0].name << ": " << ergebnis(spielbrett, spieler[0].symbol) << endl;
 				cout << "Aktueller Punktestand von " << spieler[1].name << ": " << ergebnis(spielbrett, spieler[1].symbol) << endl;
 				anzeigen(spielbrett);
@@ -221,7 +220,7 @@ void main()
 			cout << spieler[1].name << " hat gewonnen, herzlichen Glueckwunsch!" << endl;
 		}
 		cout << endl;
-		
+
 		// Auswahl zur Anzeige des Spielverlaufs.
 		cout << "Moechtest du die Log-Datei angezeigt bekommen?" << endl;
 		cout << "j = JA und n = NEIN" << endl;
@@ -232,8 +231,14 @@ void main()
 			cin >> auswahl;
 
 			if (auswahl == 'j') {
-				logDateiEingabe(moveHistory, "LogDatei");
-				ausgabeMoveHistory(moveHistory);
+				if (spielModus == true) {
+					logDateiEingabe(moveHistory, "LogDatei", spielModus);
+					ausgabeMoveHistory(moveHistory, spielModus);
+				}
+				else {
+					logDateiEingabe(moveHistory, "LogDatei", spielModus);
+					ausgabeMoveHistory(moveHistory, spielModus);
+				}
 			}
 			else if (auswahl == 'n') {
 			}
@@ -254,6 +259,7 @@ void main()
 			cin >> auswahl;
 
 			if (auswahl == 'j') {
+				system("cls");
 			}
 			else if (auswahl == 'n') {
 				cout << "Auf Wiedersehen :)!" << endl;
@@ -266,8 +272,6 @@ void main()
 			break;
 		}
 		cout << endl;
-
-		delete[] moveHistory;
 	}
 
 	system("pause");

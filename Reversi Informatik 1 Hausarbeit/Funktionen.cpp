@@ -3,7 +3,6 @@
 #include "Funktionen.h"
 #include <algorithm> 
 #include <iterator> 
-#include <iomanip>
 using namespace std;
 
 /*
@@ -231,6 +230,10 @@ void zugAusfuehren(Board &spielbrett, int legalCol, int legalRow, char player, c
 	}
 }
 
+/*
+	Zählt wie viel eigene Steine der Spieler auf dem Spielbrett hat.
+*/
+
 int ergebnis(Board &spielbrett, char player)
 {
 	int eigeneSteine = 0;
@@ -246,11 +249,20 @@ int ergebnis(Board &spielbrett, char player)
 	return eigeneSteine;
 }
 
+/*
+	Bewertung des Ergebnis. Priorisierung strategisch wichtiger Spielfelder.
+*/
 int bewertung(Board &spielbrett, char player)
 {
 	int punkte = ergebnis(spielbrett, player);
 	int ecken = 0;
+	int feldUmEcke = 0;
+	int kanten = 0;
+
 	const int eckenKoordinaten[4][2] = { {0,0},{0,7},{7,0},{7,7} };
+	const int felderUmEcken[12][2] = { {1,0},{1,1},{0,1},{1,7},{1,6},{0,6},{6,0},{6,1},{7,1},{6,6},{6,7},{7,6} };
+	int kantenKoordinaten[24][2] = { {1,0},{2,0},{3,0},{4,0},{5,0},{6,0},{7,1},{7,2},{7,3},{7,4},{7,5},{7,6},
+									   {0,1},{0,2},{0,3},{0,4},{0,5},{0,6},{1,7},{2,7},{3,7},{4,7},{5,7},{6,7} };
 	for (int i = 0; i < 4; i++) {
 		int x = eckenKoordinaten[i][0];
 		int y = eckenKoordinaten[i][1];
@@ -258,8 +270,27 @@ int bewertung(Board &spielbrett, char player)
 			ecken++;
 		}
 	}
-	return punkte + ecken * 10;
+	for (int j = 0; j < 12; j++) {
+		int x = felderUmEcken[j][0];
+		int y = felderUmEcken[j][1];
+		if (spielbrett[x][y] == player) {
+			feldUmEcke++;
+		}
+	}
+	for (int i = 0; i < 24; i++) {
+		int x = kantenKoordinaten[i][0];
+		int y = kantenKoordinaten[i][1];
+		if (spielbrett[x][y] == player) {
+			kanten++;
+		}
+	}
+	return punkte * 0.5 + ecken * 10.0 - feldUmEcke * 8.0 + kanten * 5.0;
 }
+
+/*
+	Erstellt eine Kopie des aktuellen Spiélfelds, damit in der Kopie Spielzüge ausgeführt
+	werden können, ohne das eiegtnliche Spielbrett zu verändern.
+*/
 
 void spielbrettKopieren(Board &spielbrett, Board &spielbrettKopie) {
 	for (int reihe = 0; reihe < 8; reihe++) {
@@ -268,6 +299,11 @@ void spielbrettKopieren(Board &spielbrett, Board &spielbrettKopie) {
 		}
 	}
 }
+
+/*
+	Probiert über mehrere Züge vorausdenkend, welcher Zug der künstlichen Intelligenz am
+	meisten Punkte oder auch strategischen Vorteil bringt. Gibt den Zug mit dem besten Ergebnis zurück.
+*/
 
 Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, char enemy, int thinkAhead) {
 	Board spielbrettKopie;
@@ -295,15 +331,13 @@ Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, ch
 						else {
 							// Spiel vorbei.
 						}
-						
 					}
 					else {
 						Move gegnerReaktion = zugEingabeAutomatik(spielbrettKopie, legaleZuegeGegner, enemy, player, thinkAhead - 1);
 						zugAusfuehren(spielbrettKopie, gegnerReaktion.legalX, gegnerReaktion.legalY, enemy, player);
 					}
-								
 				}
-				
+
 				int hypothetischesErgebnis = bewertung(spielbrettKopie, player) - bewertung(spielbrettKopie, enemy); // Punkte vom Gegner verhingern, auch wenn mein Punktestand gleich bleibt
 				if (hypothetischesErgebnis > bestesErgebnis) {
 					bestesErgebnis = hypothetischesErgebnis;
@@ -320,13 +354,21 @@ Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, ch
 
 	return move;
 }
+/*
+	Diese Funktion wird von der main() aufgerufen und leitet zur Funktion zugEingabeAutomatik weiter.
+	Das fünfte Argument gibt die tiefe der Rekursion an.
+*/
 
 Move zugEingabeAutomatik(Board &spielbrett, int legalMove[8][8], char player, char enemy)
 {
 	return zugEingabeAutomatik(spielbrett, legalMove, player, enemy, 4);
 }
 
-bool logDateiEingabe(int moveHistory[124], string fileName)
+/*
+	Schreibt die ausgeführten Züge eines Spiels in eine LogDatei mit dem Namen "LogDatei".
+*/
+
+bool logDateiEingabe(History moveHistory, string fileName, bool spielmodus)
 {
 	ofstream fileOut;
 	fileOut.open(fileName);
@@ -338,8 +380,15 @@ bool logDateiEingabe(int moveHistory[124], string fileName)
 
 	fileOut << "LogDatei des Spiels:" << endl << endl;
 
-	for (int i = 1; i < 61; i++) {
-		fileOut << "(" << moveHistory[i*2-1] << "|" << moveHistory[i*2] << ")" << endl;
+	if (spielmodus) {
+		for (int i = 1; i < 61; i++) {
+			fileOut << "(" << moveHistory.volleHistory[i * 2 - 1] << "|" << moveHistory.volleHistory[i * 2] << ")" << endl;
+		}
+	}
+	else {
+		for (int i = 1; i < 11; i++) {
+			fileOut << "(" << moveHistory.testHistory[i * 2 - 1] << "|" << moveHistory.testHistory[i * 2] << ")" << endl;
+		}
 	}
 
 	fileOut.close();
@@ -347,14 +396,30 @@ bool logDateiEingabe(int moveHistory[124], string fileName)
 	return true;
 }
 
-void ausgabeMoveHistory(int moveHistory[120])
+/*
+	Die Funktion gibt die gemachten Züge eines Spiels aus.
+*/
+
+void ausgabeMoveHistory(History moveHistory, bool spielmodus)
 {
 	cout << "LogDatei des Spiels:" << endl << endl;
-	for (int i = 1; i < 61; i++) {
-		cout << "(" << moveHistory[i * 2 - 1] << "|" << moveHistory[i * 2] << ")" << endl;
+
+	if (spielmodus) {
+		for (int i = 1; i < 61; i++) {
+			cout << "(" << moveHistory.volleHistory[i * 2 - 1] << "|" << moveHistory.volleHistory[i * 2] << ")" << endl;
+		}
+	}
+	else {
+		for (int i = 1; i < 11; i++) {
+			cout << "(" << moveHistory.testHistory[i * 2 - 1] << "|" << moveHistory.testHistory[i * 2] << ")" << endl;
+		}
 	}
 	cout << endl;
 }
+
+/*
+	Ausgabe der Spielregeln.
+*/
 
 void spielregeln(Board &brett)
 {
@@ -390,7 +455,7 @@ void spielregeln(Board &brett)
 	brett[4][5] = { '!' };
 
 	anzeigen(brett);
-	
+
 	cout << endl;
 	cout << "In diesem Fall kann der Spieler 'O' seinen naechsten Stein auf alle Felder legen, die mit einem ! markiert sind." << endl << endl;
 	cout << "Gegnerische Steine kann man zu seinen eigenen Steinen umdrehen, indem man gegnerische Steine" << endl;
@@ -427,39 +492,45 @@ void spielregeln(Board &brett)
 	system("cls");
 }
 
-//Befüllt das Spielfeld vor Spielbeginn  mit den 4 Anfangssteinen
+/*
+	Befüllt das Spielfeld vor Spielbeginn  mit den 4 Anfangssteinen
+*/
+
 void spielbrettBefuellen(Board &spielbrett) {
-// Das Spielbrett wird auf "blank" gesetzt.
-for (int row = 0; row < 8; row++) {
-	for (int col = 0; col < 8; col++) {
-		spielbrett[row][col] = ' ';
+	// Das Spielbrett wird auf "blank" gesetzt.
+	for (int row = 0; row < 8; row++) {
+		for (int col = 0; col < 8; col++) {
+			spielbrett[row][col] = ' ';
+		}
 	}
+
+	// Die 4 festen Steine werden gesetzt
+	spielbrett[3][3] = { 'X' };
+	spielbrett[4][4] = { 'X' };
+	spielbrett[3][4] = { 'O' };
+	spielbrett[4][3] = { 'O' };
 }
 
-// Die 4 festen Steine werden gesetzt
-spielbrett[3][3] = { 'X' };
-spielbrett[4][4] = { 'X' };
-spielbrett[3][4] = { 'O' };
-spielbrett[4][3] = { 'O' };
-}
+/*
+	Befüllt das Spielfeld so, dass noch 10 Felder frei sind
+*/
 
-//Befüllt das Spielfeld so, dass noch 10 Felder frei sind
 void spielbrettBefuellenTestversion(Board &spielbrett) {
 	const char inhalt[] = "XXOXXOOXOOXXXXXXOOOOXOXXOOXOXXXXOOXOOOOOO XXXOOO   OXX O   OXX  ";
 	for (int i = 0; i < 64; i++) {
-		((char*) spielbrett)[i] = inhalt[i];
+		((char *)spielbrett)[i] = inhalt[i];
 	}
 	//Der String stellt das hier unten abgebildete Spielfeld dar
-	/*std::array < std::array<char, 8>, 8> test = array{
-		array{'X','X','O','X','X','O','O','X'},
-		array{'O','O','X','X','X','X','X','X'},
-		array{'O','O','O','O','X','O','X','X'},
-		array{'O','O','X','O','X','X','X','X'},
-		array{'O','O','X','O','O','O','O','O'},
-		array{'O',' ','X','X','X','O','O','O'},
-		array{' ',' ',' ','O','X','X',' ','O'},
-		array{' ',' ',' ','O','X','X',' ',' '},
+	/*
+	 *	(Darstellung zur Lesbarkeit des inhalt-strings)
+		{'X','X','O','X','X','O','O','X'},
+		{'O','O','X','X','X','X','X','X'},
+		{'O','O','O','O','X','O','X','X'},
+		{'O','O','X','O','X','X','X','X'},
+		{'O','O','X','O','O','O','O','O'},
+		{'O',' ','X','X','X','O','O','O'},
+		{' ',' ',' ','O','X','X',' ','O'},
+		{' ',' ',' ','O','X','X',' ',' '},
 	};
 	*/
-
 }
